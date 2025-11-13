@@ -42,6 +42,9 @@ model Organization {
   sets              Sets[]
   thirdParty        ThirdParty[]
   errors            Errors[]
+  newsSources       NewsSource[]
+  newsItems         NewsItem[]
+  postedNews        PostedNews[]
 }
 
 model Tags {
@@ -415,6 +418,7 @@ model Post {
   comments                   Comments[]
   tags                       TagsPosts[]
   errors                     Errors[]
+  postedNews                 PostedNews[]
   error                      String?
   createdAt                  DateTime                  @default(now())
   updatedAt                  DateTime                  @updatedAt
@@ -674,6 +678,86 @@ model Mentions {
 
   @@id([name, username, platform, image])
   @@index([createdAt])
+}
+
+model NewsSource {
+  id             String       @id @default(uuid())
+  name           String
+  url            String
+  feedType       String       @default("RSS")
+  category       String?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  active         Boolean      @default(true)
+  fetchInterval  Int          @default(3600000)
+  lastFetchedAt  DateTime?
+  newsItems      NewsItem[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  deletedAt      DateTime?
+
+  @@index([organizationId])
+  @@index([active])
+  @@index([lastFetchedAt])
+  @@index([deletedAt])
+}
+
+model NewsItem {
+  id              String         @id @default(uuid())
+  sourceId        String
+  source          NewsSource     @relation(fields: [sourceId], references: [id])
+  organizationId  String
+  organization    Organization   @relation(fields: [organizationId], references: [id])
+  title           String
+  originalContent String         @db.Text
+  enhancedContent String?        @db.Text
+  url             String
+  imageUrl        String?
+  publishedAt     DateTime?
+  fetchedAt       DateTime       @default(now())
+  status          NewsItemStatus @default(PENDING)
+  aiEnhanced      Boolean        @default(false)
+  hash            String
+  postedNews      PostedNews[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  deletedAt       DateTime?
+
+  @@unique([hash, sourceId])
+  @@index([sourceId])
+  @@index([organizationId])
+  @@index([status])
+  @@index([hash])
+  @@index([fetchedAt])
+  @@index([deletedAt])
+}
+
+model PostedNews {
+  id             String       @id @default(uuid())
+  newsItemId     String
+  newsItem       NewsItem     @relation(fields: [newsItemId], references: [id])
+  postId         String
+  post           Post         @relation(fields: [postId], references: [id])
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  postedAt       DateTime     @default(now())
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([newsItemId, postId])
+  @@index([newsItemId])
+  @@index([postId])
+  @@index([organizationId])
+  @@index([postedAt])
+}
+
+enum NewsItemStatus {
+  PENDING
+  ENHANCED
+  SCHEDULED
+  POSTED
+  SKIPPED
+  ERROR
 }
 
 enum OrderStatus {

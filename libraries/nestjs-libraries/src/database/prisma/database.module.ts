@@ -41,6 +41,10 @@ import { ThirdPartyRepository } from '@gitroom/nestjs-libraries/database/prisma/
 import { ThirdPartyService } from '@gitroom/nestjs-libraries/database/prisma/third-party/third-party.service';
 import { VideoManager } from '@gitroom/nestjs-libraries/videos/video.manager';
 import { FalService } from '@gitroom/nestjs-libraries/openai/fal.service';
+import { NewsSourceRepository } from '@gitroom/nestjs-libraries/database/prisma/news/news-source.repository';
+import { NewsItemRepository } from '@gitroom/nestjs-libraries/database/prisma/news/news-item.repository';
+import { PostedNewsRepository } from '@gitroom/nestjs-libraries/database/prisma/news/posted-news.repository';
+import { NewsService } from '@gitroom/nestjs-libraries/database/prisma/news/news.service';
 
 @Global()
 @Module({
@@ -91,6 +95,10 @@ import { FalService } from '@gitroom/nestjs-libraries/openai/fal.service';
     ThirdPartyRepository,
     ThirdPartyService,
     VideoManager,
+    NewsSourceRepository,
+    NewsItemRepository,
+    PostedNewsRepository,
+    NewsService,
   ],
   get exports() {
     return this.providers;
